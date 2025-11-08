@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-org/infrastructure-repo.git'
+                git branch: 'main', url: 'https://github.com/puneethnani56/terraaform_ansible_integration.git'
             }
         }
 
