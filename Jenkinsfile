@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -31,12 +32,17 @@ pipeline {
             }
         }
 
-        stage('Get Terraform Output') {
+        stage('Get Terraform Output & Generate Inventory') {
             steps {
                 dir('terraform') {
                     script {
+                        // Get EC2 public IP from Terraform output
                         def ip = sh(script: "terraform output -raw public_ip", returnStdout: true).trim()
-                        writeFile file: "../ansible/inventory", text: "[webserver]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
+                        echo "Public IP is: ${ip}"
+
+                        // Write dynamic inventory file in ansible folder
+                        writeFile file: "../ansible/inventory", 
+                            text: "[web]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/id_rsa\n"
                     }
                 }
             }
@@ -45,8 +51,11 @@ pipeline {
         stage('Run Ansible') {
             steps {
                 dir('ansible') {
-                    sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
-                    sh 'ansible-playbook -i inventory playbook.yml'
+                    // Run Ansible playbook with SSH key
+                    sh '''
+                    export ANSIBLE_HOST_KEY_CHECKING=False
+                    ansible-playbook -i inventory playbook.yml
+                    '''
                 }
             }
         }
