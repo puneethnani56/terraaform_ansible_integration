@@ -31,7 +31,7 @@ resource "aws_security_group" "web_sg" {
 
 # Create an EC2 instance
 resource "aws_instance" "web" {
-  ami           = "ami-0c02fb55956c7d316" # Ubuntu 22.04 (example)
+  ami           = "ami-0ecb62995f68bb549" # Ubuntu 22.04 (example)
   instance_type = "t2.micro"
   key_name      = "aws-key"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
