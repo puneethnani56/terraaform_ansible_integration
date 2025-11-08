@@ -40,9 +40,11 @@ pipeline {
                         def ip = sh(script: "terraform output -raw public_ip", returnStdout: true).trim()
                         echo "Public IP is: ${ip}"
 
-                        // Write dynamic inventory file in ansible folder
-                        writeFile file: "../ansible/inventory", 
-                            text: "[web]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/id_rsa\n"
+                        // Use the secret PEM file from Jenkins
+                        withCredentials([file(credentialsId: 'aws-key', variable: 'PEM_FILE')]) {
+                            writeFile file: "../ansible/inventory", 
+                                text: "[webserver]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=${PEM_FILE}\n"
+                        }
                     }
                 }
             }
@@ -51,11 +53,12 @@ pipeline {
         stage('Run Ansible') {
             steps {
                 dir('ansible') {
-                    // Run Ansible playbook with SSH key
-                    sh '''
-                    export ANSIBLE_HOST_KEY_CHECKING=False
-                    ansible-playbook -i inventory playbook.yml
-                    '''
+                    withCredentials([file(credentialsId: 'aws-key', variable: 'PEM_FILE')]) {
+                        sh '''
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook -i inventory playbook.yml
+                        '''
+                    }
                 }
             }
         }
