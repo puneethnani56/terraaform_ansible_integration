@@ -45,7 +45,7 @@ pipeline {
         stage('Run Ansible') {
             steps {
                 dir('ansible') {
-                    sh 'ssh-keyscan -H $(terraform output -raw public_ip) >> ~/.ssh/known_hosts'
+                    sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
                     sh 'ansible-playbook -i inventory playbook.yml'
                 }
             }
