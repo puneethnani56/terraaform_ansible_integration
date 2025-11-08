@@ -5,7 +5,7 @@
     - name: Install Nginx on Ubuntu
       apt:
         name: nginx
-        state: absent
+        state: present
         update_cache: yes
       when: ansible_os_family == "Debian"
       #dasfdsf
