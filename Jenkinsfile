@@ -45,7 +45,7 @@ pipeline {
         stage('Run Ansible') {
             steps {
                 dir('ansible') {
-                    ssh-keyscan -H $(terraform output -raw public_ip) >> ~/.ssh/known_hosts
+                    sh 'ssh-keyscan -H $(terraform output -raw public_ip) >> ~/.ssh/known_hosts'
                     sh 'ansible-playbook -i inventory playbook.yml'
                 }
             }
