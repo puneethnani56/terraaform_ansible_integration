@@ -9,7 +9,9 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/puneethnani56/terraaform_ansible_integration.git'
+                git branch: 'main',
+                    credentialsId: 'github_token_id',
+                    url 'https://github.com/puneethnani56/terraaform_ansible_integration.git'
             }
         }
 
