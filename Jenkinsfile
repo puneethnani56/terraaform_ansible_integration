@@ -38,7 +38,7 @@ pipeline {
 
                             // Write dynamic inventory for Ansible
                             writeFile file: "../ansible/inventory",
-                                text: "[webserver]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=${PEM_FILE}\n"
+                                text: "[webserver]\n${ip} ansible_user=ec2-user ansible_ssh_private_key_file=${PEM_FILE}\n"
 
                             // Run Ansible immediately after generating inventory
                             dir('../ansible') {
