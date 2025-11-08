@@ -16,23 +16,16 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
+        stage('Terraform Init & Apply') {
             steps {
                 dir('terraform') {
                     sh 'terraform init'
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                dir('terraform') {
                     sh 'terraform apply -auto-approve'
                 }
             }
         }
 
-        stage('Get Terraform Output & Generate Inventory') {
+        stage('Generate Inventory & Run Ansible') {
             steps {
                 dir('terraform') {
                     script {
@@ -40,24 +33,21 @@ pipeline {
                         def ip = sh(script: "terraform output -raw public_ip", returnStdout: true).trim()
                         echo "Public IP is: ${ip}"
 
-                        // Use the secret PEM file from Jenkins
+                        // Use the secret PEM file and run Ansible within the same block
                         withCredentials([file(credentialsId: 'aws-key', variable: 'PEM_FILE')]) {
-                            writeFile file: "../ansible/inventory", 
-                                text: "[webserver]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=${PEM_FILE}\n"
-                        }
-                    }
-                }
-            }
-        }
 
-        stage('Run Ansible') {
-            steps {
-                dir('ansible') {
-                    withCredentials([file(credentialsId: 'aws-key', variable: 'PEM_FILE')]) {
-                        sh '''
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        ansible-playbook -i inventory playbook.yml
-                        '''
+                            // Write dynamic inventory for Ansible
+                            writeFile file: "../ansible/inventory",
+                                text: "[webserver]\n${ip} ansible_user=ubuntu ansible_ssh_private_key_file=${PEM_FILE}\n"
+
+                            // Run Ansible immediately after generating inventory
+                            dir('../ansible') {
+                                sh '''
+                                export ANSIBLE_HOST_KEY_CHECKING=False
+                                ansible-playbook -i inventory playbook.yml
+                                '''
+                            }
+                        }
                     }
                 }
             }
