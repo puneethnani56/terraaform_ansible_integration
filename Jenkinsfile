@@ -11,7 +11,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: 'github_token_id',
-                    url 'https://github.com/puneethnani56/terraaform_ansible_integration.git'
+                    url: 'https://github.com/puneethnani56/terraaform_ansible_integration.git'
             }
         }
 
