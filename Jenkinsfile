@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'docker' }
 
     environment {
         AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
